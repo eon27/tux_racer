@@ -194,17 +194,17 @@ void update_view(CControl *ctrl, float dt) {
 			vel_proj.Norm();
 			TQuaternion rot_quat = MakeRotationQuaternion(mz_vec, vel_proj);
 			view_vec = RotateVector(rot_quat, view_vec);
-			view_pt = ctrl->cpos + view_vec;
+			view_pt = ctrl->cpos - view_vec;
 			double ycoord = Course.FindYCoord(view_pt.x, view_pt.z);
 
-			if (view_pt.y < ycoord + MIN_CAMERA_HEIGHT) {
-				view_pt.y = ycoord + MIN_CAMERA_HEIGHT;
+			if (view_pt.y > ycoord - MIN_CAMERA_HEIGHT) {
+				view_pt.y = ycoord - MIN_CAMERA_HEIGHT;
 			}
 
 			if (ctrl->view_init) {
 				for (int i=0; i<2; i++) {
 					view_pt = interpolate_view_pos(ctrl->cpos, ctrl->cpos,
-					                               MAX_CAMERA_PITCH, ctrl->viewpos,
+					                               MAX_CAMERA_PITCH, ctrl->viewpos, /* HITTA VAR YAW BEGRÄNSAS. ändrar du till -camera_distance så fastnar den åt sidan och laggar */
 					                               view_pt, camera_distance, dt,
 					                               BEHIND_ORBIT_TIME_CONSTANT *
 					                               time_constant_mult);
@@ -220,6 +220,7 @@ void update_view(CControl *ctrl, float dt) {
 			TVector3d axis = CrossProduct(y_vec, view_vec);
 			axis.Norm();
 			TMatrix<4, 4> rot_mat = RotateAboutVectorMatrix(axis, PLAYER_ANGLE_IN_CAMERA);
+
 			view_dir = -TransformVector(rot_mat, view_vec);
 
 			if (ctrl->view_init) {
